@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
-const createError = require('http-errors');
+const AppError = require('../my_modules/AppError');
 const { readFileSync } = require('fs');
 const { dbConnection } = require('../configurations');
 
 module.exports = (req, res, next) => {
     const authHeader = req.get('Authorization');
     if (!authHeader) {
-        return next(createError(401, 'Authorization header is missing'));
+        return next(new AppError('Authorization header is missing', 401));
     }
 
     const token = authHeader.split(' ')[1];
@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
         try {
             const blacklisted = await collection.findOne({ token });
             if (blacklisted) {
-                return next(createError(401, 'Token has been invalidated'));
+                return next(new AppError('Token has been invalidated', 401));
             }
 
             const decode = jwt.verify(token, secretKey);
@@ -24,7 +24,7 @@ module.exports = (req, res, next) => {
 
             return next();
         } catch (err) {
-            return next(createError(401, 'Invalid or expired token'));
+            return next(new AppError('Invalid or expired token', 401));
         }
     });
 };

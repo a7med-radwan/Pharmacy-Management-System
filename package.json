@@ -19,10 +19,12 @@
     "bson": "^6.10.4",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
-    "nodemon": "^3.1.10"
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.10",
+    "winston": "^3.19.0"
   },
-  "devDependencies": {},
   "description": "Pharmacy management system using Node.js, Express, and MongoDB with JWT auth, drug linking, and MVC structure."
 }

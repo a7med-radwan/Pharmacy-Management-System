@@ -4,15 +4,17 @@ const alternativeDrugRouter = require('./alternativeDrug');
 const pharmacyRoutes = require('./pharmacy');
 
 module.exports = (app) => {
+    // API Root
     app.get('/', (req, res) => {
         res.status(200).json({
             status: true,
-            message: 'Drug API running'
+            message: 'Pharmacy Management API running'
         });
     });
 
-    app.use('/pharmacies', pharmacyRoutes);
-    app.use('/primaryDrugs', primaryDrugRouter);
-    app.use('/auth', authRouter);
-    app.use('/alternativeDrugs', alternativeDrugRouter);
+    // Mount Modular Routers under API v1 prefix
+    app.use('/api/v1/pharmacies', pharmacyRoutes);
+    app.use('/api/v1/primaryDrugs', primaryDrugRouter);
+    app.use('/api/v1/auth', authRouter);
+    app.use('/api/v1/alternativeDrugs', alternativeDrugRouter);
 };
