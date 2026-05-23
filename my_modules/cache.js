@@ -2,7 +2,7 @@ const mcache = require('memory-cache');
 
 const cache = (durationInSeconds) => {
     return (req, res, next) => {
-        // We only cache GET requests
+        // only cache GET requests
         if (req.method !== 'GET') {
             return next();
         }
@@ -11,11 +11,11 @@ const cache = (durationInSeconds) => {
         const cachedBody = mcache.get(key);
 
         if (cachedBody) {
-            // Serve from cache
+            // send from cache
             res.send(cachedBody);
             return;
         } else {
-            // Override res.send to capture the response body and cache it
+            // override send to save cache
             res.sendResponse = res.send;
             res.send = (body) => {
                 mcache.put(key, body, durationInSeconds * 1000);

@@ -1,28 +1,27 @@
 const { AsyncLocalStorage } = require('async_hooks');
 
-// Create a new instance of AsyncLocalStorage
 const requestContext = new AsyncLocalStorage();
 
-// Middleware to initialize context per request
+// init context for each request
 const contextMiddleware = (req, res, next) => {
-    // Generate a simple request ID (in production, use a UUID library like 'uuid' or 'crypto.randomUUID()')
+    // create simple request id
     const requestId = req.headers['x-request-id'] || Date.now().toString(36) + Math.random().toString(36).substring(2);
 
-    // Initial state to store in the context
+    // initial state
     const state = {
         requestId,
-        userId: null,   // Can be populated later by auth middleware
-        tenantId: req.headers['x-tenant-id'] || 'default', // Example for multi-tenancy
+        userId: null,
+        tenantId: req.headers['x-tenant-id'] || 'default',
         startTime: Date.now()
     };
 
-    // Run the rest of the request within this context
+    // run request inside context
     requestContext.run(state, () => {
         next();
     });
 };
 
-// Helper function to get the current context anywhere in the app
+// get context anywhere
 const getContext = () => requestContext.getStore();
 
 module.exports = {

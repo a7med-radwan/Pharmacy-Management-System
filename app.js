@@ -13,24 +13,23 @@ process.on('unhandledRejection', (reason) => {
     process.exit(1);
 })
 
-// Middlewares
+// global middlewares
 middlewares.global(app);
 
-
-// Routes
+// routes
 routes(app);
 
-// Not found Handler
+// not found handler
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
-// Global Error Handling Middleware
+// global error handler
 app.use((err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
 
-    // Development vs Production Error Responses could be handled here
+    // dev mode vs production
     if (process.env.NODE_ENV === 'development') {
         res.status(err.statusCode).json({
             status: err.status,
@@ -39,11 +38,10 @@ app.use((err, req, res, next) => {
             stack: err.stack
         });
     } else {
-        // For production, using the global returnJson to hide stack trace
+        // hide stack trace in prod
         const message = err.isOperational ? err.message : 'Something went very wrong!';
         return returnJson(res, err.statusCode, false, message, null);
     }
 });
-
 
 module.exports = app

@@ -31,6 +31,31 @@ const add = (req, res, next) => {
 
 };
 
+const update = (req, res, next) => {
+    let _id = req.params.id;
+    let newDrug = req.body;
+
+    PrimaryDrug.getById(_id, (result) => {
+        if (!result.status) {
+            return next(createError(404, "The Drug Is Not Found"));
+        }
+
+        // check if user owns this drug
+        const drugToUpdate = result.data;
+        if (drugToUpdate.addedBy && drugToUpdate.addedBy.toString() !== req._user_id) {
+            return next(createError(403, "Not allowed to edit this drug."));
+        }
+
+        PrimaryDrug.update(_id, newDrug, (updateResult) => {
+            if (!updateResult.status) {
+                return next(createError(500, updateResult.message));
+            }
+            return returnJson(res, 200, true, "The Update is Done", updateResult.data);
+        });
+    });
+};
+
+
 const getAll = (req, res, next) => {
     PrimaryDrug.getAll((result) => {
         if (!result.status) {
@@ -59,10 +84,10 @@ const remove = (req, res, next) => {
             return next(createError(404, "The Drug Is Not Found"));
         }
 
-        // We can add Resource-Based Auth here too
+        // check if user owns this drug
         const drugToDelete = result.data;
         if (drugToDelete.addedBy && drugToDelete.addedBy.toString() !== req._user_id) {
-            return next(createError(403, "Resource Authorization Failed: Cannot delete others' records."));
+            return next(createError(403, "Not allowed to delete this drug."));
         }
 
         PrimaryDrug.remove(_id, (removeResult) => {

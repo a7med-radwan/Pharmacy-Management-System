@@ -4,7 +4,7 @@ const { auth, authLimiter } = require('../middlewares');
 
 const router = Router();
 
-// Apply authLimiter to sensitive endpoints to prevent brute force
+// protect login and signup with rate limit
 router.post('/signup', authLimiter, authController.signup)
     .post('/login', authLimiter, authController.login)
     .post('/logout', auth, authController.logout);
