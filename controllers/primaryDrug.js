@@ -32,13 +32,12 @@ const add = (req, res, next) => {
 };
 
 const getAll = (req, res, next) => {
-    dbConnection('primary_drugs', async (collection) => {
-        try {
-            const drugs = await collection.find({}).toArray();
-            return returnJson(res, 200, true, "Drugs display is Done", drugs);
-        } catch (err) {
-            next(createError(500, err.message));
+    PrimaryDrug.getAll((result) => {
+        if (!result.status) {
+            return next(createError(500, result.message));
         }
+
+        return returnJson(res, 200, true, "", result.data);
     });
 };
 
@@ -48,58 +47,32 @@ const getAllWithAlternatives = (req, res, next) => {
             return next(createError(500, result.message));
         }
 
-        return returnJson(res, 200, true, "Primary drugs with alternatives retrieved", result.data);
+        return returnJson(res, 200, true, "", result.data);
     });
 };
 
-
-
-const update = (req, res, next) => {
-    const _id = req.params.id;
-
-    if (!ObjectId.isValid(_id)) {
-        return next(createError(400, "Id is nor valid"));
-    }
-
-    const drugData = req.body;
-    const drug = new PrimaryDrug(drugData);
-
-    const validation = PrimaryDrug.validate(drugData);
-    if (validation.error) {
-        return next(createError(400, validation.error.message));
-    }
-
-     drug.update(new ObjectId(_id), (status) => {
-                if (!status.status) {
-                    return next(createError(500, status.message));
-                }
-
-                return returnJson(res, 200, true, "The Update is Done", null);
-            });
-};
-
-
-
 const remove = (req, res, next) => {
-    const _id = new ObjectId(req.params.id);
+    let _id = req.params.id;
 
-    PrimaryDrug.getOne(_id)
-        .then(result => {
-            if (!result.status) {
-                return next(createError(404, "The Drug Is Not Found"));
+    PrimaryDrug.getById(_id, (result) => {
+        if (!result.status) {
+            return next(createError(404, "The Drug Is Not Found"));
+        }
+
+        // We can add Resource-Based Auth here too
+        const drugToDelete = result.data;
+        if (drugToDelete.addedBy && drugToDelete.addedBy.toString() !== req._user_id) {
+            return next(createError(403, "Resource Authorization Failed: Cannot delete others' records."));
+        }
+
+        PrimaryDrug.remove(_id, (removeResult) => {
+            if (!removeResult.status) {
+                return next(createError(500, removeResult.message));
             }
 
-            PrimaryDrug.remove(_id, (result) => {
-                if (!result.status) {
-                    return next(createError(500, result.message));
-                }
-
-                return returnJson(res, 200, true, "The Delete is Done", null);
-            });
-        })
-        .catch(err => {
-            return next(createError(500, err.message));
+            return returnJson(res, 200, true, "The Delete is Done", null);
         });
+    });
 };
 
-module.exports = { add, remove, update, getAll , getAllWithAlternatives};
+module.exports = { add, remove, update, getAll, getAllWithAlternatives };

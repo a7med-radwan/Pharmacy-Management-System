@@ -1,11 +1,12 @@
 const {Router} = require('express');
 const {authController} = require('../controllers');
-const { auth } = require('../middlewares');
+const { auth, authLimiter } = require('../middlewares');
 
 const router = Router();
 
-router.post('/signup',authController.signup)
-    .post('/login', authController.login)
+// Apply authLimiter to sensitive endpoints to prevent brute force
+router.post('/signup', authLimiter, authController.signup)
+    .post('/login', authLimiter, authController.login)
     .post('/logout', auth, authController.logout);
 
 module.exports = router;
